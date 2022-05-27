@@ -1,0 +1,114 @@
+#####################################################################
+Author: Daniela Luiza Catelan
+Professor at Federal University of Mato Grosso do Sul
+#####################################################################
+
+***********************************************************************
+INSTALL ACCEPT
+***********************************************************************
+
+===========================================================
+PYTHON 2.7 e PIP
+===========================================================
+i.	sudo add-apt-repository universe
+ii.	sudo apt-get update
+iii.sudo apt-get install python2.7
+iv.	sudo apt-get install curl
+v.	curl https://bootstrap.pypa.io/pip/2.7/get-pip.py
+OU
+$ wget https://bootstrap.pypa.io/pip/2.7/get-pip.py
+$ sudo python2.7 get-pip.py
+$ which pip2.7
+===========================================================
+DEIXAR PYTHON COMO DEFAULT
+===========================================================
+(comandos para deixar a palavra python como default, ao inves de python2.7)
+$ python --version
+$ which python
+$ python2.7 --version
+$ which python2.7
+$ ls -l /usr/bin/python
+$ sudo ln -sf /usr/bin/python2.7 /usr/bin/python
+$ ls -l /usr/bin/python
+$ python --version
+
+===========================================================
+1: CLONAR REPOSITORIO
+===========================================================
+1.1: Git do UWSampa 
+$ git clone --recurse-submodules https://github.com/uwsampa/accept.git
+1.1: Git do Lucas Reis
+$ git clone https://github.com/lucasreis1/accept.git
+a: baixar a FastApprox, e colocar em $accept/fastapprox (tem que ter a pasta fastapprox dentro deste caminho).
+b: baixar a Clang e colar os arquivos dentro da pasta $accept/clang 
+===========================================================
+2: Dependencia:
+===========================================================
+	a: CMake
+	    $ sudo apt-get -y install cmake
+        $ sudo apt-get -y install cmake-doc
+	    $ which cmake (/usr/bin/cmake)
+        $ cmake --version (cmake version 3.16.3)
+	b: Ninja
+        $ sudo apt-get update
+        $ sudo apt-get install ninja-build
+        OU $ pip2.7 install ninja
+	c: virtualenv
+        $ sudo apt-get install virtualenv
+        - dentro da pasta raiz executar: 
+            accept$ venv/bin/pip --version
+            - se aparecer python3.8 = remover
+        $ sudo apt-get remove --auto-remove virtualenv
+        Instalar: $ sudo pip2 install virtualenv
+        Se tiver uma pasta $accept/venv, apagar a pasta venv
+    d: pode ser preciso instalar:
+        $ sudo apt-get install gcc-7
+        mudar no Makefile: 
+        $ sudo apt-get install -y libxml2-dev
+        $ sudo apt-get install libomp-dev
+        $ sudo apt-get install libomp5
+        
+===========================================================
+3: No diretorio:
+    $ cd accept
+	accept$ make setup
+===========================================================
+	
+4: Path
+    $ accept=~/home/dani/accept/bin/accept
+    $ export PATH=$accept/bin:$PATH
+    OU $ source activate.sh
+===========================================================   
+
+***********************************************************
+===========================================================   
+REPRODUZINDO EXPERIMENTOS
+===========================================================   
+$ source activate.sh
+1: Criar uma do exemplo
+accept/exemplo$
+2: Criar o seu exemplo.c
+3: Criar o Makefile do exemplo
+4: Compilar o exemplo
+    4.1: Para anotações MANUAIS:
+        accept/exemplo$ make build_orig
+    4.2: Para anotações AUTOMATICAS:
+        accept/exemplo$ make build_orig OPTARGS="-all-lpe -all-lpa -all-fap"
+5: Arquivo de Compilação
+$vi accept_config.txt
+- loop (loop perforation)
+- ploop (loop paraletion) - 
+- configuração sempre em potencia de 2, exemplo: 2² - a cada 4 perfura 1
+6: Executar
+accept/exemplo$ make build_opt
+- Gera os binarios:
+    - app.opt = aproximado
+    - app.orig = original
+- .s = assembly
+    - é criado mas depois apagado, procurar no Makefile a linha onde remove.
+- para ver os resultados:
+ - preciso: make run_orig ou ./app.orig
+ - approx: make run_opt ou ./app.opt
+===========================================================   
+
+
