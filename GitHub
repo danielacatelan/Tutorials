@@ -1,0 +1,23 @@
+-> Enviar arquivo para um repositório do GitHub
+
+-> Se for a primeira vez:
+  1: baixar para Windows: gitforwindows.org
+  2: fazer download e instalar
+  3: abrir pasta Git Bash
+  4: git config --global user.name "nome"
+  5: git config --global user.email "email"
+  
+-> Abrir Prompt Comando
+  1: entrar na pasta onde estão os arquivo que deseja enviar
+    1.1: C:\Users\daniela\documentos> cd Aplicativos
+  2: para remover arquivos .git
+    2.1: rd .git /S/Q
+  3: git init
+  4: comando para adicionar todos os arquivos que estão nesta pasta
+    4.1: git add .
+  5: git commit -m "first commit"
+  6: git remote add origin https://github.com/danielacatelan/ILLP-LOOP_PERFORATION.git
+  7: envia os arquivos:
+    7.1: git push -u origin master
+    
+ -> Atualizar a página do repositório
