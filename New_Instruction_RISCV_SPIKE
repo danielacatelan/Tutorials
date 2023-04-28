@@ -168,10 +168,10 @@ DECLARE_INSN(addx, MATCH_ADDX, MASK_ADDX)
 DECLARE_INSN(subx, MATCH_SUBX, MASK_SUBX)
 DECLARE_INSN(mod, MATCH_MOD, MASK_MOD)
 
-6.2 Create a file riscv-isa-sim/riscv/insns/addx.h subx.h mod.h and add these lines:
+6.2 Create a file riscv-isa-sim/riscv/insns/addx.h subx.h mod.h and add these lines: (pode ser qq configuração de porta)
 WRITE_RD(sext_xlen(RS1 % RS2)); //MOD
-WRITE_RD(sext_xlen(RS1 + RS2)); //ADDX
-WRITE_RD(sext_xlen(RS1 - RS2)); //SUBX
+WRITE_RD(sext_xlen(RS1 ^ RS2 ^ 00000000000000000000000000000000)); //ADDX
+WRITE_RD(sext_xlen(RS1 - RS2)); //SUB
 
 6.3 Add this file to riscv-isa-sim/riscv/riscv.mk.in
 riscv_insn_ext_i = \
