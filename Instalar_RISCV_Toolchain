@@ -24,7 +24,7 @@ cd riscv-gnu-toolchain
  cd ..
 
 ===========================================================
-2: RISCV-GCC-PREBUILT
+2: RISCV-GCC-PREBUILT - Opcional (instalei para usar com o NEORV32)
 ===========================================================
 $ wget https://github.com/stnolting/riscv-gcc-prebuilt/releases/tag/rv32i-4.0.0/riscv32-unknown-elf.gcc-12.1.0.tar.gz
 OU
