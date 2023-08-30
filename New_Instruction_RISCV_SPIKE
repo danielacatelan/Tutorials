@@ -9,33 +9,44 @@ Professor at Federal University of Mato Grosso do Sul
 ADD A NEW INSTRUCTION IN RISCV-TOOLCHAIN AND SPIKE
 ***********************************************************************
 OBS: riscv-gnu-toolchain must be installed
+===========================================================
+1: RISCV-GNU-TOOLCHAIN
+===========================================================
+sudo apt-get install autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev git
 
-export PATH=$PATH:/opt/riscv/bin
+git clone https://github.com/riscv/riscv-gnu-toolchain
+
+cd riscv-gnu-toolchain
+
+./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32
+
+ sudo make
+
+ cd ..
+
+-> export PATH=$PATH:/opt/riscv/bin
 
 ===========================================================
 1: DOWNLOADS TOOLS
 ===========================================================
-1.1 RISCV-TOOLS (optional)
-git clone https://github.com/riscv-software-src/riscv-tools.git
-
-1.2 SPIKE
+1.1 SPIKE
 git clone https://github.com/riscv-software-src/riscv-isa-sim.git
 
-1.3 RISCV-OPCODES
+1.2 RISCV-OPCODES
 git clone https://github.com/riscv/riscv-opcodes.git
 Download. Copy the contents into the riscv-opcodes folder (I replaced the existing encoding.h file)
 https://github.com/riscv/riscv-opcodes/tree/7c3db437d8d3b6961f8eb2931792eaea1c469ff3
 
-1.4 RISCV-OPENOCD
+1.3 RISCV-OPENOCD
 git clone https://github.com/riscv/riscv-openocd.git
 
-1.5 RISCV-PK
+1.4 RISCV-PK
 git clone https://github.com/riscv-software-src/riscv-pk.git
 
-1.6 RISCV-TESTS
+1.5 RISCV-TESTS
 git clone https://github.com/riscv-software-src/riscv-tests.git
 
-1.7 RISCV-FESVR
+1.6 RISCV-FESVR
 git clone https://github.com/riscvarchive/riscv-fesvr.git
 ===========================================================
 2: INSTALL TOOLS (in this order)
@@ -50,6 +61,8 @@ git clone https://github.com/riscvarchive/riscv-fesvr.git
 	cd riscv-pk
 	mkdir build && cd build
 	../configure --prefix=/opt/riscv --host=riscv32-unknown-elf
+        OBS: pode ser que precise colocar:
+	    -> ../configure --prefix=/opt/riscv --host=riscv32-unknown-elf --with-arch=rv32imafdc_zicsr_zifencei
 	make
 	sudo make install
 	cd ../..
@@ -66,7 +79,15 @@ git clone https://github.com/riscvarchive/riscv-fesvr.git
 3.1 Enter the directory riscv-opcodes and edit opcodes (riscv-opcodes/opcodes)
 addx    rd rs1 rs2 31..25=1  14..12=0 6..2=0x0A 1..0=3
 subx    rd rs1 rs2 31..25=1  14..12=0 6..2=0x0B 1..0=3
+mulx    rd rs1 rs2 31..25=1  14..12=0 6..2=0x1C 1..0=3
+divx    rd rs1 rs2 31..25=1  14..12=0 6..2=0x1D 1..0=3
 mod     rd rs1 rs2 31..25=1  14..12=0 6..2=0x1A 1..0=3
+
+-> floating point
+faddx.s   rd rs1 rs2      31..27=0x10 rm       26..25=0 6..2=0x14 1..0=3
+fsubx.s   rd rs1 rs2      31..27=0x11 rm       26..25=0 6..2=0x14 1..0=3
+fmulx.s   rd rs1 rs2      31..27=0x12 rm       26..25=0 6..2=0x14 1..0=3
+fdivx.s   rd rs1 rs2      31..27=0x13 rm       26..25=0 6..2=0x14 1..0=3
 
 cd riscv-opcodes
 cat /home/dani/riscv-opcodes/opcodes | /home/dani/riscv-opcodes/parse-opcodes -c > /home/dani/riscv-opcodes/instructionInfo.h
@@ -76,12 +97,34 @@ open the instructionInfo.h file and check the lines:
 #define MASK_ADDX  0xfe00707f
 #define MATCH_SUBX 0x200002f
 #define MASK_SUBX  0xfe00707f
+#define MATCH_MULX 0x2000073
+#define MASK_MULX  0xfe00707f
+#define MATCH_DIVX 0x2000077
+#define MASK_DIVX  0xfe00707f
 #define MATCH_MOD 0x200006b
 #define MASK_MOD  0xfe00707f
 ...
 DECLARE_INSN(addx, MATCH_ADDX, MASK_ADDX)
 DECLARE_INSN(subx, MATCH_SUBX, MASK_SUBX)
+DECLARE_INSN(mulx, MATCH_MULX, MASK_MULX)
+DECLARE_INSN(divx, MATCH_DIVX, MASK_DIVX)
 DECLARE_INSN(mod, MATCH_MOD, MASK_MOD)
+
+-> floating point
+#define MATCH_FADDX_S 0x80000053
+#define MASK_FADDX_S  0xfe00007f
+#define MATCH_FSUBX_S 0x88000053
+#define MASK_FSUBX_S  0xfe00007f
+
+#define MATCH_FMULX_S 0x90000053
+#define MASK_FMULX_S  0xfe00007f
+#define MATCH_FDIVX_S 0x98000053
+#define MASK_FDIVX_S  0xfe00007f
+
+DECLARE_INSN(faddx_s, MATCH_FADDX_S, MASK_FADDX_S)
+DECLARE_INSN(fsubx_s, MATCH_FSUBX_S, MASK_FSUBX_S)
+DECLARE_INSN(fmulx_s, MATCH_FMULX_S, MASK_FMULX_S)
+DECLARE_INSN(fdivx_s, MATCH_FDIVX_S, MASK_FDIVX_S)
 
 make install
 
@@ -93,12 +136,34 @@ riscv-gnu-toolchain/riscv-binutils/include/opcode/riscv-opc.h
 #define MASK_ADDX  0xfe00707f
 #define MATCH_SUBX 0x200002f
 #define MASK_SUBX  0xfe00707f
+#define MATCH_MULX 0x2000073
+#define MASK_MULX  0xfe00707f
+#define MATCH_DIVX 0x2000077
+#define MASK_DIVX  0xfe00707f
 #define MATCH_MOD 0x200006b
 #define MASK_MOD  0xfe00707f
 ...
 DECLARE_INSN(addx, MATCH_ADDX, MASK_ADDX)
 DECLARE_INSN(subx, MATCH_SUBX, MASK_SUBX)
+DECLARE_INSN(mulx, MATCH_MULX, MASK_MULX)
+DECLARE_INSN(divx, MATCH_DIVX, MASK_DIVX)
 DECLARE_INSN(mod, MATCH_MOD, MASK_MOD)
+
+-> floating point
+#define MATCH_FADDX_S 0x80000053
+#define MASK_FADDX_S  0xfe00007f
+#define MATCH_FSUBX_S 0x88000053
+#define MASK_FSUBX_S  0xfe00007f
+
+#define MATCH_FMULX_S 0x90000053
+#define MASK_FMULX_S  0xfe00007f
+#define MATCH_FDIVX_S 0x98000053
+#define MASK_FDIVX_S  0xfe00007f
+
+DECLARE_INSN(faddx_s, MATCH_FADDX_S, MASK_FADDX_S)
+DECLARE_INSN(fsubx_s, MATCH_FSUBX_S, MASK_FSUBX_S)
+DECLARE_INSN(fmulx_s, MATCH_FMULX_S, MASK_FMULX_S)
+DECLARE_INSN(fdivx_s, MATCH_FDIVX_S, MASK_FDIVX_S)
 
 
 3.3 Add in
@@ -107,7 +172,20 @@ riscv-gnu-toolchain/riscv-binutils/opcodes/riscv-opc.c
 
 {"addx",	 0, INSN_CLASS_I, "d,s,t", MATCH_ADDX, MASK_ADDX, match_opcode, 0},
 {"subx",	 0, INSN_CLASS_I, "d,s,t", MATCH_SUBX, MASK_SUBX, match_opcode, 0},
-{"mod",	 0, INSN_CLASS_I, "d,s,t", MATCH_MOD, MASK_MOD, match_opcode, 0},
+{"mulx",	 0, INSN_CLASS_I, "d,s,t", MATCH_MULX, MASK_MULX, match_opcode, 0},
+{"divx",	 0, INSN_CLASS_I, "d,s,t", MATCH_DIVX, MASK_DIVX, match_opcode, 0},
+{"mod",	     0, INSN_CLASS_I, "d,s,t", MATCH_MOD, MASK_MOD, match_opcode, 0},
+
+-> floating point (em riscv-gdb retirar _OR_ZFINX)
+
+{"faddx.s",     0, INSN_CLASS_F_OR_ZFINX,   "D,S,T",     MATCH_FADDX_S|MASK_RM, MASK_FADDX_S|MASK_RM, match_opcode, 0 },
+{"faddx.s",     0, INSN_CLASS_F_OR_ZFINX,   "D,S,T,m",   MATCH_FADDX_S, MASK_FADDX_S, match_opcode, 0 },
+{"fsubx.s",     0, INSN_CLASS_F_OR_ZFINX,   "D,S,T",     MATCH_FSUBX_S|MASK_RM, MASK_FSUBX_S|MASK_RM, match_opcode, 0 },
+{"fsubx.s",     0, INSN_CLASS_F_OR_ZFINX,   "D,S,T,m",   MATCH_FSUBX_S, MASK_FSUBX_S, match_opcode, 0 },
+{"fmulx.s",    0, INSN_CLASS_F_OR_ZFINX,   "D,S,T",     MATCH_FMULX_S|MASK_RM, MASK_FMULX_S|MASK_RM, match_opcode, 0 },
+{"fmulx.s",    0, INSN_CLASS_F_OR_ZFINX,   "D,S,T,m",   MATCH_FMULX_S, MASK_FMULX_S, match_opcode, 0 },
+{"fdivx.s",    0, INSN_CLASS_F_OR_ZFINX,   "D,S,T",     MATCH_FDIVX_S|MASK_RM, MASK_FDIVX_S|MASK_RM, match_opcode, 0 },
+{"fdivx.s",    0, INSN_CLASS_F_OR_ZFINX,   "D,S,T,m",   MATCH_FDIVX_S, MASK_FDIVX_S, match_opcode, 0 },
 
 ===========================================================
 4. REBUILD RISCV-GNU-TOOLCHAIN
@@ -115,6 +193,8 @@ riscv-gnu-toolchain/riscv-binutils/opcodes/riscv-opc.c
 cd riscv-gnu-toolchain
 make clean
 ./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32
+OR
+./configure --prefix=/opt/riscv --with-arch=rv32imafdc --with-abi=ilp32
 sudo make
 
 ===========================================================
@@ -157,34 +237,127 @@ riscv32-unknown-elf-objdump -dC addx > addx.dump
 6. BUILD NEW INSTRUCTION SPIKE
 ===========================================================
 6.1 In the riscv-isa-sim/riscv/encoding.h add the following lines:
+  6.1.1 Verificar se no arquivo encoding.h do PK (riscv-pk/machine/encoding.h)foi atualizado, caso não: atualizar e rebutar o riscv-pk
+  
 #define MATCH_ADDX 0x200002b
 #define MASK_ADDX  0xfe00707f
 #define MATCH_SUBX 0x200002f
 #define MASK_SUBX  0xfe00707f
+#define MATCH_MULX 0x2000073
+#define MASK_MULX  0xfe00707f
+#define MATCH_DIVX 0x2000077
+#define MASK_DIVX  0xfe00707f
 #define MATCH_MOD 0x200006b
 #define MASK_MOD  0xfe00707f
 ...
 DECLARE_INSN(addx, MATCH_ADDX, MASK_ADDX)
 DECLARE_INSN(subx, MATCH_SUBX, MASK_SUBX)
+DECLARE_INSN(mulx, MATCH_MULX, MASK_MULX)
+DECLARE_INSN(divx, MATCH_DIVX, MASK_DIVX)
 DECLARE_INSN(mod, MATCH_MOD, MASK_MOD)
+
+-> floating point
+#define MATCH_FADDX_S 0x80000053
+#define MASK_FADDX_S  0xfe00007f
+#define MATCH_FSUBX_S 0x88000053
+#define MASK_FSUBX_S  0xfe00007f
+
+#define MATCH_FMULX_S 0x90000053
+#define MASK_FMULX_S  0xfe00007f
+#define MATCH_FDIVX_S 0x98000053
+#define MASK_FDIVX_S  0xfe00007f
+
+DECLARE_INSN(faddx_s, MATCH_FADDX_S, MASK_FADDX_S)
+DECLARE_INSN(fsubx_s, MATCH_FSUBX_S, MASK_FSUBX_S)
+DECLARE_INSN(fmulx_s, MATCH_FMULX_S, MASK_FMULX_S)
+DECLARE_INSN(fdivx_s, MATCH_FDIVX_S, MASK_FDIVX_S)
 
 6.2 Create a file riscv-isa-sim/riscv/insns/addx.h subx.h mod.h and add these lines: (pode ser qq configuração de porta)
 WRITE_RD(sext_xlen(RS1 % RS2)); //MOD
-WRITE_RD(sext_xlen(RS1 - RS2)); //SUB
+WRITE_RD(sext_xlen(RS1 - RS2)); //SUBX*
+WRITE_RD(sext_xlen(RS1 * RS2)); //MULX*
+WRITE_RD(sext_xlen(RS1 / RS2)); //DIVX*
 WRITE_RD(sext_xlen(RS1 ^ RS2 ^ 00000000000000000000000000000000)); //ADDX com adder InXA1
 
+-> PARA O PONTO FLUANTE
+   - cria a instrução fxxx_s.h em riscv-isa-sim/riscv/insns
+   - os arquivos .c devem ser modificados na pasta riscv-isa-sim/softfloat
+   
+- faddx_s.h
+  - f32_addx.c
+    - s_subMagsF32x.c
+    - s_addMagsF32x.c
+    
+- fsubx_s.h
+  - f32_subx.c
+    - s_subMagsF32x.c
+    - s_addMagsF32x.c
+    
+- fmulx_s.h
+  - f32_mulx.c
+    - s_roundPackToF32x.c    ( signZ, expZ, sigZ ) //mudei
+    - s_shortShiftRightJam64x //mudei
+    - s_normSubnormalF32Sig.c  ( sigA ) ou  ( sigB )
+    - s_propagateNaNF32UI.c  ( uiA, uiB )
+    
+- fdivx_s.h
+  - f32_divx.c
+    - s_normSubnormalF32Sig.c  ( sigA ) ou  ( sigB )
+    - s_roundPackToF32.c  ( signZ, expZ, sigZ )
+    - s_propagateNaNF32UI.c  ( uiA, uiB )
 
 6.3 Add this file to riscv-isa-sim/riscv/riscv.mk.in
 riscv_insn_ext_i = \
       ...
-      mod \
       addx \
       subx \
+      mulx \
+      divx \
       ...
+  
+riscv_insn_ext_f = \
+      faddx_s \
+      fsubx_s \
+      fmulx_s \
+      fdivx_s \
+
+6.4 PARA O PONTO FLUANTE
+- Acrescentar no arquivo riscv-isa-sim/softfloat/softfloat.mk.in
+  f32_addx.c \
+  f32_subx.c \
+  s_addMagsF32x.c \
+  s_subMagsF32x.c \
+  
+  f32_mulx.c \
+  s_roundPackToF32x.c \
+  s_shortShiftRightJam64x \
+  
+  f32_divx.c \
+  
+- Acrescentar no arquivo riscv-isa-sim/softfloat/internals.h
+
+-> para faddx e fsubx:
+  float32_t softfloat_addMagsF32x( uint_fast32_t, uint_fast32_t );
+  float32_t softfloat_subMagsF32x( uint_fast32_t, uint_fast32_t );
+  
+-> para fmulx:  
+  float32_t softfloat_roundPackToF32x( bool, int_fast16_t, uint_fast32_t );
+  
+- Acrescentar no arquivo riscv-isa-sim/softfloat/softfloat.h
+  float32_t f32_addx( float32_t, float32_t );
+  float32_t f32_subx( float32_t, float32_t );
+  
+  float32_t f32_mulx( float32_t, float32_t );
+  float32_t f32_divx( float32_t, float32_t );
+
       
 6.5 Rebuild spike/build
 cd riscv-isa-sim/build
 sudo make install
+
+-->> SE DER ERRO NO REBUILD:
+ex: HGATP_MODE_SV57X4 (fora do escopo)
+   - está faltando alguma coisa, alguma declaração na nova instrução.
 
 6.6 Test Spike
 spike --isa=RV32I /opt/riscv/riscv32-unknown-elf/bin/pk addx
