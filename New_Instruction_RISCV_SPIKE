@@ -176,9 +176,9 @@ riscv-gnu-toolchain/riscv-binutils/opcodes/riscv-opc.c
 {"subx",	 0, INSN_CLASS_I, "d,s,t", MATCH_SUBX, MASK_SUBX, match_opcode, 0},
 {"mulx",	 0, INSN_CLASS_I, "d,s,t", MATCH_MULX, MASK_MULX, match_opcode, 0},
 {"divx",	 0, INSN_CLASS_I, "d,s,t", MATCH_DIVX, MASK_DIVX, match_opcode, 0},
-{"mod",	     0, INSN_CLASS_I, "d,s,t", MATCH_MOD, MASK_MOD, match_opcode, 0},
+{"mod",	         0, INSN_CLASS_I, "d,s,t", MATCH_MOD, MASK_MOD, match_opcode, 0},
 
--> floating point (em riscv-gdb retirar _OR_ZFINX)
+-> floating point (in riscv-gdb to remove _OR_ZFINX)
 
 {"faddx.s",     0, INSN_CLASS_F_OR_ZFINX,   "D,S,T",     MATCH_FADDX_S|MASK_RM, MASK_FADDX_S|MASK_RM, match_opcode, 0 },
 {"faddx.s",     0, INSN_CLASS_F_OR_ZFINX,   "D,S,T,m",   MATCH_FADDX_S, MASK_FADDX_S, match_opcode, 0 },
@@ -279,7 +279,7 @@ WRITE_RD(sext_xlen(RS1 % RS2)); //MOD
 WRITE_RD(sext_xlen(RS1 - RS2)); //SUBX*
 WRITE_RD(sext_xlen(RS1 * RS2)); //MULX*
 WRITE_RD(sext_xlen(RS1 / RS2)); //DIVX*
-WRITE_RD(sext_xlen(RS1 ^ RS2 ^ 00000000000000000000000000000000)); //ADDX com adder InXA1
+WRITE_RD(sext_xlen(RS1 ^ RS2 ^ 00000000000000000000000000000000)); //ADDX com adder InXA1 (inst. approx)
 
 -> PARA O PONTO FLUANTE
    - cria a instrução fxxx_s.h em riscv-isa-sim/riscv/insns
@@ -299,14 +299,10 @@ WRITE_RD(sext_xlen(RS1 ^ RS2 ^ 00000000000000000000000000000000)); //ADDX com ad
   - f32_mulx.c
     - s_roundPackToF32x.c    ( signZ, expZ, sigZ ) //mudei
     - s_shortShiftRightJam64x //mudei
-    - s_normSubnormalF32Sig.c  ( sigA ) ou  ( sigB )
-    - s_propagateNaNF32UI.c  ( uiA, uiB )
+
     
 - fdivx_s.h
   - f32_divx.c
-    - s_normSubnormalF32Sig.c  ( sigA ) ou  ( sigB )
-    - s_roundPackToF32.c  ( signZ, expZ, sigZ )
-    - s_propagateNaNF32UI.c  ( uiA, uiB )
 
 6.3 Add this file to riscv-isa-sim/riscv/riscv.mk.in
 riscv_insn_ext_i = \
